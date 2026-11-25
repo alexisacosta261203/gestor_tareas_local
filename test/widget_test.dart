@@ -1,30 +1,25 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:gestor_tareas_local/data/database.dart';
+import 'package:gestor_tareas_local/data/tareas_repository.dart';
 import 'package:gestor_tareas_local/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+  testWidgets('La pantalla inicial se muestra sin errores', (tester) async {
+    final repo = TareasRepository(AppDatabase(NativeDatabase.memory()));
+    await tester.pumpWidget(GestorTareasApp(repositorio: repo));
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Gestor de tareas'), findsOneWidget);
+    expect(find.text('Agregar tarea'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
+
+    // Desmonta la app (cierra la base) y deja que terminen los timers.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 1));
   });
 }
